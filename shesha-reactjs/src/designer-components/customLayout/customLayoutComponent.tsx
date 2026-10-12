@@ -14,6 +14,7 @@ const CustomLayoutComponent: CustomLayoutComponentDefinition = {
   allowInherit: true,
   type: 'customLayout',
   isInput: false,
+  acceptsChildren: true,
   name: 'Custom Layout',
   icon: <GroupOutlined />,
   emptyComponents: [],

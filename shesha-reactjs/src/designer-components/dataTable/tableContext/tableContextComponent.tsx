@@ -18,6 +18,7 @@ const TableContextComponent: TableContextComponentDefinition = {
   allowInherit: true,
   type: 'dataContext',
   isInput: true,
+  acceptsChildren: true,
   isOutput: true,
   name: 'Data Context',
   icon: <DatabaseOutlined />,

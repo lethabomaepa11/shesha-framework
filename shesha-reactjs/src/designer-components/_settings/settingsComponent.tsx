@@ -61,6 +61,7 @@ const SettingsComponentInner = <TValue = unknown>({ model, nestedComponent }: Se
 const SettingsComponent: IToolboxComponent<ISettingsComponentProps> = {
   type: 'setting',
   isInput: true,
+  acceptsChildren: true,
   isOutput: true,
   name: 'Setting',
   icon: <SettingOutlined />,

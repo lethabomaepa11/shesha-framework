@@ -16,6 +16,7 @@ import { getFirstNonEmptyStringPropertyOrUndefined } from '@/utils/object';
 const TableContextComponentLegacy: TableContextComponentLegacyDefinition = {
   type: 'datatableContext',
   isInput: true,
+  acceptsChildren: true,
   isOutput: true,
   isHidden: true,
   name: 'Data Context (Legacy)',

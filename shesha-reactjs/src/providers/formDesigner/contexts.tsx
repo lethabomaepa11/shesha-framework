@@ -18,6 +18,8 @@ import { BaseHistoryItem, FormDesignerSubscription, FormDesignerSubscriptionType
 import { IValidationCollector } from '../validator/interfaces';
 import { ReactNode } from 'react';
 import { DeviceTypes } from '../canvas/contexts';
+import type { FormDesignerComponentGetter } from '../form/hooks';
+import type { IContainerOwnership } from './structure/containers';
 
 export interface AddComponentPayloadBase {
   index: number;
@@ -40,6 +42,16 @@ export interface IUpdateChildComponentsPayload {
   containerId: string;
   componentIds: string[];
 }
+
+export interface IComponentMovePayload {
+  componentId: string;
+  /** ROOT_COMPONENT_KEY, a component's own container (its id), or a pane (tab, step, column...) */
+  containerId: string;
+  /** Final position in the target list, counted after the component has been taken out of its current place */
+  index: number;
+}
+
+export type MoveResult = { ok: true } | { ok: false; reason: string };
 
 export interface IComponentDeletePayload {
   componentId: string;
@@ -117,6 +129,11 @@ export type FormDesignerActions = {
   deleteSelectedComponent: () => boolean;
   duplicateComponent: (payload: IComponentDuplicatePayload) => void;
   updateChildComponents: (payload: IUpdateChildComponentsPayload) => void;
+  /** Moves a component to a container and position as one undo step. Never throws for invalid moves */
+  moveComponent: (payload: IComponentMovePayload) => MoveResult;
+  getComponentDefinition: FormDesignerComponentGetter;
+  /** Which component owns each container, rebuilt only when the structure changes */
+  getContainerOwnership: () => IContainerOwnership;
   addDataProperty: (payload: IAddDataPropertyPayload) => void;
 
   startDraggingNewItem: () => void;
