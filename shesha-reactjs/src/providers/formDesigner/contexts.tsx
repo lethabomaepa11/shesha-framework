@@ -53,6 +53,15 @@ export interface IComponentMovePayload {
 
 export type MoveResult = { ok: true } | { ok: false; reason: string };
 
+export interface IRevealRequest {
+  /** Increases with every reveal */
+  version: number;
+  /** Panes to open, outermost first */
+  containerIds: readonly string[];
+  /** Panes already opened for this request, so a component that mounts again doesn't re-open them */
+  opened: Set<string>;
+}
+
 export interface IComponentDeletePayload {
   componentId: string;
 }
@@ -118,6 +127,9 @@ export type FormDesignerState = {
 
   /** Increases by one whenever any container's list of children changes (add, delete, move, undo...), but not on property edits */
   structureVersion: number;
+
+  /** The latest request to open panes on the canvas (see reveal) */
+  revealRequest: IRevealRequest;
 };
 
 export type FormDesignerActions = {
@@ -134,6 +146,11 @@ export type FormDesignerActions = {
   getComponentDefinition: FormDesignerComponentGetter;
   /** Which component owns each container, rebuilt only when the structure changes */
   getContainerOwnership: () => IContainerOwnership;
+  /** Asks Tabs, Wizard and Collapsible Panel to open the panes needed to show a component (or pane) on the canvas */
+  reveal: (id: string) => void;
+  /** Called by canvas components while they're drawn; returns the function to call when they go away */
+  registerMountedComponent: (id: string) => () => void;
+  isComponentMounted: (id: string) => boolean;
   addDataProperty: (payload: IAddDataPropertyPayload) => void;
 
   startDraggingNewItem: () => void;
