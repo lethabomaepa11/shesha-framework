@@ -1,12 +1,14 @@
 import { FC } from 'react';
 import { Button } from 'antd';
-import { CopyOutlined, DeleteFilled } from '@ant-design/icons';
+import { CopyOutlined, DeleteFilled, SnippetsOutlined } from '@ant-design/icons';
 import { useFormDesigner, useFormDesignerReadOnly, useFormDesignerSelectedComponent } from '@/providers/formDesigner';
+import { useComponentClipboard } from './clipboard/useComponentClipboard';
 
 export const ComponentTitleButtons: FC = ({}) => {
   const component = useFormDesignerSelectedComponent();
   const readOnly = useFormDesignerReadOnly();
   const { deleteComponent, duplicateComponent } = useFormDesigner();
+  const clipboard = useComponentClipboard();
 
   const onDeleteClick = (): void => {
     if (!readOnly && component)
@@ -21,6 +23,13 @@ export const ComponentTitleButtons: FC = ({}) => {
   return component && !readOnly
     ? (
       <>
+        <Button
+          type="text"
+          icon={<SnippetsOutlined />}
+          onClick={() => void clipboard.copyToClipboard(component.id, false)}
+          size="small"
+          title="Copy component (Ctrl+C)"
+        />
         <Button
           type="text"
           icon={<CopyOutlined />}

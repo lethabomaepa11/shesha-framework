@@ -20,6 +20,7 @@ import { ReactNode } from 'react';
 import { DeviceTypes } from '../canvas/contexts';
 import type { FormDesignerComponentGetter } from '../form/hooks';
 import type { IContainerOwnership } from './structure/containers';
+import type { INameChange, IPasteSelection, PasteMode } from './clipboard';
 
 export interface AddComponentPayloadBase {
   index: number;
@@ -52,6 +53,15 @@ export interface IComponentMovePayload {
 }
 
 export type MoveResult = { ok: true } | { ok: false; reason: string };
+
+export interface IComponentsPastePayload {
+  /** Components in saved-form (tree) format, e.g. from the clipboard. They're changed while pasting */
+  components: IConfigurableFormComponent[];
+  selection: IPasteSelection;
+  mode: PasteMode;
+}
+
+export type PasteResult = { ok: true; componentIds: string[]; containerId: string; renamed: INameChange[] } | { ok: false; reason: string };
 
 export interface IRevealRequest {
   /** Increases with every reveal */
@@ -143,6 +153,10 @@ export type FormDesignerActions = {
   updateChildComponents: (payload: IUpdateChildComponentsPayload) => void;
   /** Moves a component to a container and position as one undo step. Never throws for invalid moves */
   moveComponent: (payload: IComponentMovePayload) => MoveResult;
+  /** The component with everything inside it, in saved-form format */
+  getComponentTree: (componentId: string) => IConfigurableFormComponent | undefined;
+  /** Pastes components with new ids where `selection` and `mode` say, as one undo step */
+  pasteComponents: (payload: IComponentsPastePayload) => PasteResult;
   getComponentDefinition: FormDesignerComponentGetter;
   /** Which component owns each container, rebuilt only when the structure changes */
   getContainerOwnership: () => IContainerOwnership;
