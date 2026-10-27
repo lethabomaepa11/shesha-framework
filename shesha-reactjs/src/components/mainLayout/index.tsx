@@ -1,6 +1,6 @@
 /* eslint @typescript-eslint/strict-boolean-expressions: "error" */
 "use client";
-import ConfigurableSidebarMenu from '@/components/configurableSidebarMenu';
+import { ConfigurableSidebarMenu } from '@/components/configurableSidebarMenu';
 import { IHtmlHeadProps } from '@/components/htmlHead';
 import LayoutHeading from '@/components/layoutHeading';
 import NodeOrFuncRenderer, { ReactNodeOrFunc } from '@/components/nodeOrFuncRenderer';
@@ -30,7 +30,7 @@ import { useStyles } from './styles/styles';
 
 const { Header, Content, Footer, Sider } = Layout;
 
-export interface IMenuTriggerProps {
+interface IMenuTriggerProps {
   collapsed: boolean;
 }
 
@@ -71,11 +71,15 @@ const DefaultLayout: FC<PropsWithChildren<IMainLayoutProps>> = (props) => {
     headerControls,
     headerFormId,
   } = props;
-  const { resolvedTheme } = useTheme();
+  const { resolvedTheme, theme } = useTheme();
   const { styles } = useStyles();
 
   // antd's Sider/Menu only understand 'light' | 'dark', so pass the resolved scheme.
   const sideMenuTheme = resolvedTheme;
+
+  // The theme's Page colour is a single, light-designed value (light grey by default), so dark mode
+  // keeps the theme-aware container background instead of painting a light page behind dark components.
+  const pageBackground = resolvedTheme === 'dark' ? undefined : theme.layoutBackground;
 
   const [collapsed, setCollapsed] = useLocalStorage(SIDEBAR_COLLAPSE, true);
 
@@ -208,6 +212,7 @@ const DefaultLayout: FC<PropsWithChildren<IMainLayoutProps>> = (props) => {
             <div
               className={classNames(styles.mainArea, styles.shaSiteLayoutBackground)}
               style={{
+                ...(isNullOrWhiteSpace(pageBackground) ? {} : { background: pageBackground }),
                 ...layoutBackgroundStyle,
               }}
             >

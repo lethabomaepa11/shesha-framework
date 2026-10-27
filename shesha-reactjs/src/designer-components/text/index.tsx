@@ -15,6 +15,7 @@ import { getComponentEvents } from '../_common/events';
 import { useEvents } from '@/components/formDesigner/components/eventsAndApiValueProcessor';
 
 const TextComponent: TextComponentDefinition = {
+  themeGroup: 'inline',
   allowInherit: true,
   type: 'text',
   name: 'Text',
@@ -25,6 +26,7 @@ const TextComponent: TextComponentDefinition = {
   getWrapperStyle: (model) => getFullSizeWrapperDesignerStyle(model),
   Factory: ({ model }) => {
     const handleEvent = useEvents<void>(model.componentName);
+    if (model.hidden === true) return null;
     return (
       <GenericText
         {...model}

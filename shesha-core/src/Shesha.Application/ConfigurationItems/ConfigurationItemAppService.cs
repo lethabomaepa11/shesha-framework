@@ -2,6 +2,7 @@
 using Abp.Domain.Entities;
 using Abp.Events.Bus;
 using Microsoft.AspNetCore.Mvc;
+using Shesha.Authorization;
 using Shesha.ConfigurationItems.Cache;
 using Shesha.ConfigurationItems.Dtos;
 using Shesha.ConfigurationItems.Events;
@@ -13,7 +14,7 @@ namespace Shesha.ConfigurationItems
     /// <summary>
     /// Common Configuration Item application service
     /// </summary>
-    [Authorization.SheshaAuthorize(Domain.Enums.RefListPermissionedAccess.RequiresPermissions, "app:Configurator")]
+    [SheshaAuthorize(Domain.Enums.RefListPermissionedAccess.RequiresPermissions, PermissionNames.Application_Configure, IsConfigurable = false)]
     public class ConfigurationItemAppService: SheshaAppServiceBase
     {
         private readonly IConfigurationItemClientSideCache _clientSideCache;
@@ -110,7 +111,7 @@ namespace Shesha.ConfigurationItems
             await _clientSideCache.ClearAsync();
         }
 
-        public Task TriggerConfigurationChangedEventAsync(TriggerConfigurationChangedEventRequest  request)
+        public async Task TriggerConfigurationChangedEventAsync(TriggerConfigurationChangedEventRequest  request)
         {
             var bus = IocManager.Resolve<IEventBus>();
             var data = new ConfigurationStateUpdatedEventData(
@@ -118,9 +119,7 @@ namespace Shesha.ConfigurationItems
                 request.ModuleName,
                 request.ItemName
             );
-            bus.Trigger(data);
-
-            return Task.CompletedTask;
+            await bus.TriggerAsync(data);
         }
         public class TriggerConfigurationChangedEventRequest 
         {

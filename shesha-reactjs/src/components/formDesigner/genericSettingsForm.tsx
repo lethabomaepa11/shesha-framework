@@ -18,7 +18,7 @@ import { IStyleValue, useThemeActions } from '@/providers';
 import { useDeepCompareEffect } from '@/hooks/useDeepCompareEffect';
 import { getStyleBoxValue } from '@/designer-components/styleBox/utils';
 
-export interface IProps<TModel extends IConfigurableFormComponent> {
+interface IProps<TModel extends IConfigurableFormComponent> {
   readOnly: boolean;
   model: TModel;
   markup: FormMarkup;
@@ -45,7 +45,7 @@ function GenericSettingsForm<TModel extends IConfigurableFormComponent>({
   isInModal,
 }: IProps<TModel>): React.JSX.Element {
   const [form] = Form.useForm();
-  const { getComponentStyle } = useThemeActions();
+  const { getComponentStyle, getComponentGroupStyle } = useThemeActions();
 
   const defaultModel = useDefaultModelActionsOrUndefined<TModel>();
   const dcm = useDataContextManager();
@@ -56,12 +56,21 @@ function GenericSettingsForm<TModel extends IConfigurableFormComponent>({
     if (Boolean(toolboxComponent.allowInherit)) {
       const defaultComponentStyle = toolboxComponent.getDefaultStyles?.() ?? {};
       defaultModel?.setDefaultModel('Default component Style', { ['desktop']: defaultComponentStyle } as TModel);
+      // Group tier (Input/Inline/Standard/Layout Components) sits between the hardcoded default and
+      // the component's own theme override, so a component with no per-type override still inherits
+      // its group's shared appearance.
+      // Only apply theme group styles if the component has an explicit themeGroup property
+      const groupStyle = toolboxComponent.themeGroup !== undefined
+        ? getComponentGroupStyle(toolboxComponent.themeGroup)
+        : {};
+      defaultModel?.setDefaultModel('Theme group Style', { ['desktop']: groupStyle } as TModel);
       const themeStyle = getComponentStyle(toolboxComponent.type);
       defaultModel?.setDefaultModel('Theme component Style', { ['desktop']: themeStyle } as TModel);
 
       if (designerDevice !== 'desktop' && designerDevice !== currentDevice.current) {
         // inherit mobile and tablet styles from desktop styles
         defaultModel?.setDefaultModel('Default component Style', { [designerDevice]: defaultComponentStyle } as unknown as TModel);
+        defaultModel?.setDefaultModel('Theme group Style', { [designerDevice]: groupStyle } as unknown as TModel);
         defaultModel?.setDefaultModel('Theme component Style', { [designerDevice]: themeStyle } as unknown as TModel);
         const model = defaultModel?.getModel();
         const desktopStyles = deepCopyViaJson(unproxyValue((model as IConfigurableFormComponent).desktop ?? {})) as IStyleValue;
@@ -69,7 +78,7 @@ function GenericSettingsForm<TModel extends IConfigurableFormComponent>({
       }
     }
     currentDevice.current = designerDevice;
-  }, [toolboxComponent.allowInherit, designerDevice, defaultModel, toolboxComponent, getComponentStyle]);
+  }, [toolboxComponent.allowInherit, designerDevice, defaultModel, toolboxComponent, getComponentStyle, getComponentGroupStyle]);
 
   // Keep the Ant Design form store in sync when the component model changes externally.
   // initialValues is applied once on mount, so without this sync any field managed outside

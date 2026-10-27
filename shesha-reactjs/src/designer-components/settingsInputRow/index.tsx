@@ -37,11 +37,15 @@ const InputRowInput = (props: IInputRowInputProps): React.JSX.Element => {
       readOnly={parentReadOnly || readOnly}
       inline={props.inline}
       width={width}
+      // getWidth() substitutes a per-type default when the input declares no width, so `width`
+      // alone can't tell the two apart. Pass the declared one through so SettingInput can size
+      // to an explicit width but fall back to the shared flex basis otherwise.
+      hasExplicitWidth={props.width != null}
     />
   );
 };
 
-export const InputRow: FC<UnwrappedInputRowProps> = ({ inputs, readOnly, children, inline = false, hidden = false }) => {
+const InputRow: FC<UnwrappedInputRowProps> = ({ inputs, readOnly, children, inline = false, hidden = false }) => {
   const { styles } = useStyles();
   const { formData } = useShaFormInstance();
 

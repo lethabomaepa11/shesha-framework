@@ -30,6 +30,7 @@ import { useDesignerReveal } from '@/providers/formDesigner';
 
 const CollapsiblePanelComponent: CollapsiblePanelComponentDefinition = {
   styleGroup: 'common-containers',
+  themeGroup: 'layout',
   allowInherit: true,
   type: 'collapsiblePanel',
   isInput: false,

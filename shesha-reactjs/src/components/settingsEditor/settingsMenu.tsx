@@ -2,6 +2,7 @@ import { Menu, Collapse, Empty, Spin, Checkbox, Divider } from 'antd';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from '@/hooks';
 import SearchBox from './searchBox';
+import AppSelector from './appSelector';
 import { useSettingsEditor } from './provider/index';
 import { IFrontEndApplication, ISettingConfiguration } from './provider/models';
 import type { MenuProps } from 'antd';
@@ -16,13 +17,7 @@ interface ISettingItem {
   app?: IFrontEndApplication | undefined;
 }
 
-export interface ISettingApplication {
-  name: string;
-  visible?: boolean;
-  settings: ISettingGroup[];
-}
-
-export interface ISettingGroup {
+interface ISettingGroup {
   name: string;
   visible?: boolean;
   settings: ISettingItem[];
@@ -38,7 +33,7 @@ const getSettingKey = (config: ISettingConfiguration, app?: IFrontEndApplication
   return `${config.module}|${config.name}|${app?.appKey}`;
 };
 
-export const SettingsMenu: FC = () => {
+const SettingsMenu: FC = () => {
   const [isDevmode, setDevMode] = useDevMode();
 
   const [openedKeys, setOpenedKeys] = useLocalStorage<Record<string, string[]>>('settings-editor.openedKeys', {});
@@ -122,6 +117,7 @@ export const SettingsMenu: FC = () => {
   const activeKey = openedKeys[selectedApplication?.appKey ?? 'general'];
   return (
     <div className="sha-settings-editor-toolbox">
+      <AppSelector />
       <Spin spinning={configsLoadingState === 'loading'}>
         <SearchBox value={searchText} onChange={setSearchText} placeholder="Search setting" />
         {filteredGroups.length > 0 && (

@@ -42,7 +42,7 @@ import { FileListApi, StoredFileApiModel } from '../../componentsApi/componentAp
 
 import apiCode from "../../componentsApi/componentApi.ts?raw";
 
-export type { LayoutType, ListType, IAttachmentsEditorDeviceStyles, IAttachmentsEditorProps } from './interfaces';
+export type { LayoutType, ListType } from './interfaces';
 
 /** Keeps the events wrapper out of the layout; see the note at its use site. */
 const DISPLAY_CONTENTS: CSSProperties = { display: 'contents' };
@@ -182,6 +182,7 @@ const removeLegacyProperties = (result: Record<string, unknown>): void => {
 
 const AttachmentsEditor: AttachmentsEditorComponentDefinition = {
   styleGroup: 'inputs',
+  themeGroup: 'input',
   allowInherit: true,
   type: 'attachmentsEditor',
   isInput: true,

@@ -4,7 +4,7 @@ import { WarningOutlined } from '@ant-design/icons';
 import { getSettings } from './settingsForm';
 
 import { IStyleValue } from '@/providers';
-import ValidationErrors from '@/components/validationErrors';
+import { ValidationErrors } from '@/components/validationErrors';
 import { useShaFormValidationErrors } from '@/providers/form/providers/shaFormProvider';
 import { defaultStyles } from './utils';
 import { migratePrevStyles } from '../_common-migrations/migrateStyles';
@@ -40,6 +40,7 @@ export interface IValidationErrorsComponentProps extends IConfigurableFormCompon
 
 const ValidationErrorsComponent: IToolboxComponent<IValidationErrorsComponentProps> = {
   styleGroup: 'common',
+  themeGroup: 'layout',
   allowInherit: true,
   type: 'validationErrors',
   isInput: false,

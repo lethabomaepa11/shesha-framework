@@ -11,11 +11,12 @@ import { migrateCustomFunctions, migratePropertyName } from '@/designer-componen
 import { useConfigurableFormSectionsOrUndefined } from '@/providers/form/sections';
 import { isNullOrWhiteSpace } from '@/utils/nullables';
 
-export type ISectionProps = IConfigurableFormComponent;
+type ISectionProps = IConfigurableFormComponent;
 
 const settingsForm = settingsFormJson as FormMarkup;
 
 const SectionComponent: IToolboxComponent<ISectionProps> = {
+  themeGroup: 'layout',
   type: 'section',
   isInput: false,
   name: 'Section',

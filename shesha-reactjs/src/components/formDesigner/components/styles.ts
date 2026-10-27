@@ -25,6 +25,7 @@ export const useStyles = createStyles(({ css, cx, token }, model: IConfigurableF
             > .ant-form-item-label {
                 min-height: fit-content;
                 padding-bottom: 0px !important;
+                width: stretch;
                 ${model.autoAlignLabel !== false
                   ? `
                   /* Both halves of auto-alignment. An opted-out control stacks, so its label
@@ -38,6 +39,12 @@ export const useStyles = createStyles(({ css, cx, token }, model: IConfigurableF
                   height: ${isExactDimensionValue(height) ? height : 'stretch' /* ToDo: AS - review this */};
                   `
                   : ''};
+
+                /* antd fixes the label at the control height (32px). A long label that wraps
+                   spills out of that box and overlaps the next row, so let it grow. */
+                > label {
+                    height: auto;
+                }
             }
         }
 

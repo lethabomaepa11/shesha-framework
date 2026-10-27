@@ -3,13 +3,14 @@ using Abp.Domain.Repositories;
 using Shesha.Authorization;
 using Shesha.Domain;
 using Shesha.Domain.Enums;
+using Shesha.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Shesha.Permissions
 {
-    [SheshaAuthorize(Domain.Enums.RefListPermissionedAccess.RequiresPermissions, ShaPermissionNames.Pages_Maintenance)]
+    [SheshaAuthorize(RefListPermissionedAccess.RequiresPermissions, PermissionNames.Application_Administer, PermissionNames.Application_Maintenance, IsConfigurable = false)]
     public class PermissionedObjectAppService : SheshaCrudServiceBase<PermissionedObject, PermissionedObjectDto, Guid>, IPermissionedObjectAppService
     {
         private readonly IPermissionedObjectManager _permissionedObjectManager;
@@ -108,7 +109,8 @@ namespace Shesha.Permissions
         /// <returns></returns>
         public override async Task<PermissionedObjectDto> UpdateAsync(PermissionedObjectDto input)
         {
-            return await _permissionedObjectManager.SetAsync(input);
+            var dto = await _permissionedObjectManager.SetAsync(input);
+            return dto.NotNull("Failed to update permissioned object");
         }
 
         /// <summary>

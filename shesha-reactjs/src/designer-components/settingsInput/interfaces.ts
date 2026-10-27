@@ -7,7 +7,6 @@ import { ComponentSelectorValue, ComponentType } from '@/components/formComponen
 import { ComponentDefinition, ConfigurableItemFullName, FormMarkup, IComponentLabelProps, IConfigurableFormComponent, IObjectMetadata, IPropertySetting, IReferenceListIdentifier, ValueOrCodeEvaluator } from '@/interfaces';
 import { ISetFormDataPayload } from '@/providers/form/contexts';
 import { IEntityTypeIdentifier } from '@/providers/sheshaApplication/publicApi/entities/models';
-import { SizeType } from 'antd/es/config-provider/SizeContext';
 import { GetResultTypeFunc } from '../codeEditor/interfaces';
 import { CodeLanguages } from '../codeEditor/types';
 import { IConfigurableActionConfiguratorComponentProps } from '../configurableActionsConfigurator/interfaces';
@@ -76,9 +75,15 @@ export interface ISettingsInputBase<TValue = unknown> extends IComponentLabelPro
 
   width?: string | number | undefined;
   inline?: boolean | undefined;
+  /**
+   * Set by `settingsInputRow` when the input declares a `width` of its own, as opposed to the
+   * per-type default `getWidth()` substitutes. Inputs with an explicit width are laid out at
+   * that width; the rest keep the shared flex basis. Not intended to be set in form markup.
+   */
+  hasExplicitWidth?: boolean | undefined;
 }
 
-export type DimensionTypes = 'width' | 'height' | 'minWidth' | 'minHeight' | 'maxWidth' | 'maxHeight' | 'gridRowHeight' | 'gridColumnWidth';
+type DimensionTypes = 'width' | 'height' | 'minWidth' | 'minHeight' | 'maxWidth' | 'maxHeight' | 'gridRowHeight' | 'gridColumnWidth';
 // Color Picker
 export interface IDimensionFieldSettingsInputProps extends ISettingsInputBase<string> {
   type: 'dimensionField';
@@ -86,14 +91,12 @@ export interface IDimensionFieldSettingsInputProps extends ISettingsInputBase<st
   tooltip?: string | undefined;
   icon?: string | React.ReactNode | undefined;
 }
-export const isDimensionFieldProps = (value: ISettingsInputBase<string>): value is IDimensionFieldSettingsInputProps => value.type === 'dimensionField';
 
 // Color Picker
 export interface IColorPickerSettingsInputProps extends ISettingsInputBase {
   type: 'colorPicker';
   showText?: boolean | undefined;
 }
-export const isColorPickerProps = (value: ISettingsInputBase): value is IColorPickerSettingsInputProps => value.type === 'colorPicker';
 
 // Dropdown
 export interface IDropdownSettingsInputProps extends ISettingsInputBase {
@@ -108,7 +111,6 @@ export interface IDropdownSettingsInputProps extends ISettingsInputBase {
   showSearch?: boolean | undefined;
   variant?: 'borderless' | 'filled' | 'outlined' | undefined;
 }
-export const isDropdownProps = (value: ISettingsInputBase): value is IDropdownSettingsInputProps => value.type === 'dropdown';
 
 // Custom Dropdown
 export interface ICustomDropdownSettingsInputProps extends ISettingsInputBase<string> {
@@ -126,7 +128,6 @@ export interface IRadioSettingsInputProps extends ISettingsInputBase {
   buttonGroupOptions?: IRadioOption[] | IPropertySetting<IRadioOption[]> | undefined;
   allowDeselect?: boolean | undefined;
 }
-export const isRadioProps = (value: ISettingsInputBase): value is IRadioSettingsInputProps => value.type === 'radio';
 
 // Switch
 export interface ISwitchSettingsInputProps extends ISettingsInputBase<boolean> {
@@ -146,6 +147,14 @@ export interface ISectionSeparatorSettingsInputProps extends ISettingsInputBase 
   orientation?: 'horizontal' | 'vertical' | undefined;
   fontSize?: string | number | undefined;
   lineType?: string | undefined;
+}
+
+// Slider
+export interface ISliderSettingsInputProps extends ISettingsInputBase<number | undefined> {
+  type: 'slider';
+  min?: number | undefined;
+  max?: number | undefined;
+  step?: number | undefined;
 }
 
 // Number Field
@@ -288,23 +297,6 @@ export interface IPropertyAutocompleteSettingsInputProps extends ISettingsInputB
   mode?: 'single' | 'multiple' | 'tags' | undefined;
 }
 
-export interface IContextPropertyAutocompleteSettingsInputProps extends ISettingsInputBase, IHasModelType {
-  type: 'contextPropertyAutocomplete';
-  dataSourceType?: AutocompleteDataSourceType | undefined;
-  dataSourceUrl?: string | undefined;
-  entityType?: string | IEntityTypeIdentifier | undefined;
-  entityAutocompleteType?: EntityTypeAutocompleteType | undefined;
-  // +referenceList?: any;
-  filter?: object | undefined;
-  displayPropName?: string | undefined;
-  keyPropName?: string | undefined;
-  fields?: string[] | undefined;
-  useRawValues?: boolean | undefined;
-  allowClear?: boolean | undefined;
-  showSearch?: boolean | undefined;
-  httpVerb?: string | undefined;
-  availableHttpVerbs?: IHttpVerb[] | undefined;
-}
 
 export interface IFormAutocompleteSettingsInputProps extends ISettingsInputBase<FormFullName> {
   type: 'formAutocomplete';
@@ -364,7 +356,7 @@ export interface IKeyInformationBarColumnsInputProps extends ISettingsInputBase<
 }
 
 // Label Value Editor
-export interface BaseLabelValueEditorProps extends ISettingsInputBase<ILabelValueItem[]> {
+interface BaseLabelValueEditorProps extends ISettingsInputBase<ILabelValueItem[]> {
   labelTitle?: string | undefined;
   labelName?: string | undefined;
   valueTitle?: string | undefined;
@@ -488,15 +480,7 @@ export interface ILayerSelectorSettingsInputProps extends ISettingsInputBase<ILa
 export interface IRequestConfigButtonSettingsInputProps extends ISettingsInputBase {
   type: 'requestConfigButton';
 }
-export const isRequestConfigButtonProps = (value: ISettingsInputBase): value is IRequestConfigButtonSettingsInputProps => value.type === 'requestConfigButton';
 
-// Common styling props that can be applied to multiple components
-export interface ICommonStylingProps {
-  variant?: 'borderless' | 'filled' | 'outlined' | undefined;
-  size?: SizeType | undefined;
-  width?: string | number | undefined;
-  wrapperCol?: { span: number } | undefined;
-}
 
 // Union type of all settings input props
 export type BaseInputProps =
@@ -507,6 +491,7 @@ export type BaseInputProps =
   IRadioSettingsInputProps |
   ISwitchSettingsInputProps |
   INumberFieldSettingsInputProps |
+  ISliderSettingsInputProps |
   ITextFieldSettingsInputProps |
   ITextAreaSettingsInputProps |
   ICodeEditorSettingsInputProps |
@@ -549,7 +534,7 @@ export type BaseInputProps =
   ISectionSeparatorSettingsInputProps
 ;
 
-export type InputTypes = BaseInputProps['type'];
+type InputTypes = BaseInputProps['type'];
 
 export type ISettingsInputSettingsInputProps = {
   [K in InputTypes]: {

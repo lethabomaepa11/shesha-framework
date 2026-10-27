@@ -8,6 +8,7 @@ using Shesha.GraphQL.Middleware;
 using Shesha.GraphQL.Provider.GraphTypes;
 using Shesha.GraphQL.Provider.Queries;
 using Shesha.GraphQL.UnitOfWork;
+using System;
 using System.Threading.Tasks;
 
 namespace Shesha.GraphQL
@@ -26,8 +27,11 @@ namespace Shesha.GraphQL
             services.AddGraphQL(builder => builder
                 .ConfigureExecutionOptions(options =>
                 {
+                    if (options.RequestServices == null)
+                        throw new ArgumentException("RequestServices cannot be null.");
+
                     options.EnableMetrics = true;// Environment.IsDevelopment();
-                    var logger = options.RequestServices.GetService<ILogger>();
+                    var logger = options.RequestServices.GetService<ILogger>() ?? NullLogger.Instance;
 
                     var unitOfWorkManager = options.RequestServices.GetRequiredService<IUnitOfWorkManager>();
 
@@ -46,7 +50,6 @@ namespace Shesha.GraphQL
                 .AddSystemTextJson() // For .NET Core 3+
             );
 
-            services.AddSingleton<GraphQLMiddleware>();
             services.AddSingleton(new GraphQLSettings
             {
                 BuildUserContext = ctx => new GraphQLUserContext

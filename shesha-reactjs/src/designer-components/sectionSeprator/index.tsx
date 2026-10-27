@@ -1,6 +1,5 @@
-import SectionSeparator from '@/components/sectionSeparator';
+import { SectionSeparator } from '@/components/sectionSeparator';
 import { migrateCustomFunctions, migrateHiddenToVisible, migratePropertyName, migrateStylingBoxToJson } from '@/designer-components/_common-migrations/migrateSettings';
-
 import { getBooleanPropertyOrUndefined } from '@/utils/object';
 import { LineOutlined } from '@ant-design/icons';
 import { migrateFormApi } from '../_common-migrations/migrateFormApi1';
@@ -16,6 +15,7 @@ import { getStyleBoxValue } from '../styleBox/utils';
 import { DEFAULT_DESIGNER_PADDING, getDesignerPadding } from '@/components/formDesigner/utils/stylingUtils';
 
 const SectionSeparatorComponent: SectionSeparatorComponentDefinition = {
+  themeGroup: 'layout',
   allowInherit: true,
   type: 'sectionSeparator',
   isInput: false,

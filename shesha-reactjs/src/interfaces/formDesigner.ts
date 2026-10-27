@@ -79,6 +79,13 @@ export type IComponentSettingsFormFactory<TModel extends IConfigurableFormCompon
 
 export type SettingsFormMarkupFactoryArgs = FormMarkupFactoryArgs & {
   removeStyleRouter?: boolean;
+  /**
+   * When true, style panels that are normally hidden/shown based on the component's own mode or
+   * type (e.g. a dropdown's Tag Style panel, only shown when Display Style is Tags) are always
+   * visible instead. Used by the theme editor's Component Defaults panel, where every style the
+   * component can expose should be editable regardless of which mode happens to be selected.
+   */
+  forceVisible?: boolean;
 };
 export type SettingsFormMarkupFactory = FormMarkupFactory<SettingsFormMarkupFactoryArgs>;
 
@@ -113,12 +120,29 @@ export type ToolboxComponentAsTemplate = {
 
 export type StyleGroups = 'common' | 'inputs' | 'common-containers' | 'buttons';
 
+/**
+ * The four component-group theme tabs (Input/Inline/Standard/Layout Components) a component
+ * belongs to for theming purposes, set with its `themeGroup`. Components in the same tier
+ * inherit shared group-level appearance defaults (see `IConfigurableTheme.componentGroups`).
+ */
+export type ThemeComponentGroup = 'input' | 'inline' | 'standard' | 'layout';
+
 export type IToolboxComponentBase = {
   /** Show the component in the theme editor (true by default) */
   showInThemeEditor?: boolean | undefined;
 
-  /** Groupping components by style */
+  /** Groupping components by style. Also selects the style API exposed to scripts (see formComponentApi). */
   styleGroup?: StyleGroups | undefined;
+
+  /**
+   * Theme tab (Input/Inline/Standard/Layout Components) whose group styles this component inherits.
+   * Use this - not `styleGroup`, which also selects the script style API - to place a component in a
+   * theme tab and enable theme group styling for the component.
+   *
+   * IMPORTANT: Only components with an explicit `themeGroup` property will inherit theme group styles.
+   * Components with only `styleGroup` (without `themeGroup`) will NOT be affected by theme group styles.
+   */
+  themeGroup?: ThemeComponentGroup | undefined;
 
   // ToDo: AS - remove after all components are migrated to inheritance
   /**

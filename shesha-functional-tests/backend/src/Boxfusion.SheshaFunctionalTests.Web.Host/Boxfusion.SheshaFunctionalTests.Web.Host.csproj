@@ -56,7 +56,6 @@
     <PackageReference Include="ElmahCore" />
     <PackageReference Include="ElmahCore.Postgresql" />
     <PackageReference Include="ElmahCore.Sql" />
-    <PackageReference Include="GraphQL.Server.Ui.Playground" />
     <PackageReference Include="Hangfire.Core" />
     <PackageReference Include="Hangfire.PostgreSql" />
     <PackageReference Include="IDisposableAnalyzers">
@@ -83,17 +82,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" />
-    <PackageReference Include="Swashbuckle.AspNetCore.Filters" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="wwwroot\swagger\ui\index.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Aspose.Words.lic" />
   </ItemGroup>
 
   <ItemGroup>

@@ -206,7 +206,7 @@ class PublicFormApi<Values extends object = object> implements IFormApi<Values> 
   }
 }
 
-export type ShaFormSubscription<Values extends object = object> = (cs: IShaFormInstance<Values>) => void;
+type ShaFormSubscription<Values extends object = object> = (cs: IShaFormInstance<Values>) => void;
 export type ShaFormSubscriptionType = 'data-modified';
 
 
@@ -978,9 +978,11 @@ const useShaForm = <Values extends object = object>(args: UseShaFormArgs<Values>
         shaForm: instance,
         queryStringGetter: getQueryParams,
       });
-      const allConstants = makeObservableProxy<IApplicationContext<Values>>(accessors);
 
       const expressionExecuter: ExpressionExecuter = (expression, data) => {
+        // per-call proxy so call arguments (e.g. `data` snapshots) don't override accessors for later scripts
+        const allConstants = makeObservableProxy<IApplicationContext<Values>>(accessors);
+
         if (isDefined(data) && typeof (data) === 'object')
           allConstants.setAdditionalData(data);
 
@@ -998,4 +1000,4 @@ const useShaForm = <Values extends object = object>(args: UseShaFormArgs<Values>
   return [formInstance];
 };
 
-export { ShaFormInstance, useShaForm };
+export { useShaForm };

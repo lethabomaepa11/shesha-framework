@@ -76,7 +76,7 @@ namespace Shesha.Permission
                     }
 
                     // Update items
-                    var toUpdate = dbItems.Where(dbi => items.Any(i => dbi.Object == i.Object && dbi.Md5 != i.Md5)).ToList();
+                    var toUpdate = dbItems.Where(dbi => items.Any(i => dbi.Object == i.Object && (dbi.Md5 != i.Md5 || i.Hardcoded == true && dbi.Hardcoded != i.Hardcoded))).ToList();
                     foreach (var dbItem in toUpdate)
                     {
                         var item = items.FirstOrDefault(x => x.Object == dbItem.Object);
@@ -84,11 +84,12 @@ namespace Shesha.Permission
                         dbItem.Module = await _moduleReporsitory.FirstOrDefaultAsync(x => x.Id == item.ModuleId);
                         dbItem.Parent = item.Parent ?? string.Empty;
                         dbItem.Name = item.Name;
+                        dbItem.Hardcoded = item.Hardcoded ?? false;
+                        // Update access and permissions only for hardcoded and inherited items
                         if (item.Hardcoded == true || dbItem.Access == Domain.Enums.RefListPermissionedAccess.Inherited)
                         {
                             dbItem.Access = item.Access ?? Domain.Enums.RefListPermissionedAccess.Inherited;
                             dbItem.Permissions = string.Join(",", item.Permissions ?? []);
-                            dbItem.Hardcoded = item.Hardcoded ?? false;
                         }
                         dbItem.Md5 = item.Md5 ?? "";
 

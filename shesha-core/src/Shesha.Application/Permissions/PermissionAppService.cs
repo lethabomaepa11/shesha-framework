@@ -20,7 +20,7 @@ namespace Shesha.Permissions
     /// Manages permission definitions. Restricted to application configurators: the permission list
     /// (including write operations) must not be readable or editable by ordinary users.
     /// </summary>
-    [SheshaAuthorize(Domain.Enums.RefListPermissionedAccess.RequiresPermissions, ShaPermissionNames.Application_Configurator)]
+    [SheshaAuthorize(Domain.Enums.RefListPermissionedAccess.RequiresPermissions, PermissionNames.Application_Configure)]
     public class PermissionAppService : SheshaAppServiceBase
     {
         private readonly IRepository<Module, Guid> _moduleRepository;
@@ -115,7 +115,7 @@ namespace Shesha.Permissions
         }
 
         [HttpPost]
-        [SheshaAuthorize(Domain.Enums.RefListPermissionedAccess.RequiresPermissions, ShaPermissionNames.Application_Configurator)]
+        [SheshaAuthorize(Domain.Enums.RefListPermissionedAccess.RequiresPermissions, PermissionNames.Application_Configure, IsConfigurable = false)]
         public async Task<PermissionDto> CreateAsync(PermissionDto permission)
         {
             var dbp = new PermissionDefinition()
@@ -134,7 +134,7 @@ namespace Shesha.Permissions
         }
 
         [HttpPut, HttpPost]
-        [SheshaAuthorize(Domain.Enums.RefListPermissionedAccess.RequiresPermissions, ShaPermissionNames.Application_Configurator)]
+        [SheshaAuthorize(Domain.Enums.RefListPermissionedAccess.RequiresPermissions, PermissionNames.Application_Configure, IsConfigurable = false)]
         public async Task<PermissionDto> UpdateAsync(PermissionDto permission)
         {
             if (permission.Id == emptyId)
@@ -157,8 +157,8 @@ namespace Shesha.Permissions
             return ObjectMapper.Map<PermissionDto>(res);
         }
 
-        [HttpPut] 
-        [SheshaAuthorize(Domain.Enums.RefListPermissionedAccess.RequiresPermissions, ShaPermissionNames.Application_Configurator)]
+        [HttpPut]
+        [SheshaAuthorize(Domain.Enums.RefListPermissionedAccess.RequiresPermissions, PermissionNames.Application_Configure, IsConfigurable = false)]
         public async Task UpdateParentAsync(PermissionDto permission)
         {
             var module = permission.Module != null ? await _moduleRepository.GetAsync(permission.Module.Id) : null;
@@ -166,7 +166,7 @@ namespace Shesha.Permissions
         }
 
         [HttpDelete]
-        [SheshaAuthorize(Domain.Enums.RefListPermissionedAccess.RequiresPermissions, ShaPermissionNames.Application_Configurator)]
+        [SheshaAuthorize(Domain.Enums.RefListPermissionedAccess.RequiresPermissions, PermissionNames.Application_Configure, IsConfigurable = false)]
         public Task DeleteAsync(string name)
         {
             return _shaPermissionManager.DeletePermissionAsync(name);

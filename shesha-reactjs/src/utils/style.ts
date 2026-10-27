@@ -6,18 +6,29 @@ import { getStyleBoxValue } from "@/designer-components/styleBox/utils";
 import { IConfigurableFormComponent, IStyleValue, IToolboxComponent } from "@/interfaces";
 import { IConfigurableTheme } from "@/providers";
 import { DeviceTypes } from "@/providers/canvas/contexts";
-import { deepMergeSkipUndefinedFunc, deepMergeValues } from "@/utils/object";
+import { deepCopyViaJson, deepMergeSkipUndefinedFunc, deepMergeValues } from "@/utils/object";
 
 export const getEffectiveStyle = (model: IConfigurableFormComponent, effectiveDevice: DeviceTypes, theme?: IConfigurableTheme | undefined, toolboxComponent?: IToolboxComponent | undefined, isSettingsForm: boolean = false): IStyleValue => {
   // for settings form components should use their own styles
   if (isSettingsForm === true)
     return model;
 
-  // Default styles + Theme component styles
-  const defStyle: IStyleValue = toolboxComponent?.getDefaultStyles?.() ?? { styleCss: {} };
-  const themeDefStyle: IStyleValue = isDefined(theme?.components)
-    ? deepMergeValues(defStyle, theme.components[model.type] as IStyleValue, deepMergeSkipUndefinedFunc)
+  // Default styles + Group theme styles (Input/Inline/Standard/Layout Components tabs).
+  // deepMergeValues only shallow-copies its target, so merge into a deep copy: some components
+  // (e.g. tabs) return nested objects shared with module-level constants from getDefaultStyles.
+  const defStyle = deepCopyViaJson(toolboxComponent?.getDefaultStyles?.() ?? { styleCss: {} }) as IStyleValue;
+  // Only apply theme group styles if the component has an explicit themeGroup property
+  const groupStyle = toolboxComponent?.themeGroup !== undefined
+    ? theme?.componentGroups?.[toolboxComponent.themeGroup]
+    : undefined;
+  const groupDefStyle: IStyleValue = isDefined(groupStyle)
+    ? deepMergeValues(defStyle, groupStyle, deepMergeSkipUndefinedFunc)
     : defStyle;
+
+  // + Theme component styles (per-type override wins over the group default)
+  const themeDefStyle: IStyleValue = isDefined(theme?.components)
+    ? deepMergeValues(groupDefStyle, theme.components[model.type] as IStyleValue, deepMergeSkipUndefinedFunc)
+    : groupDefStyle;
 
   // Default styles + Theme component styles + Desktop component styles
   const desktopModel = model.desktop;
@@ -36,9 +47,9 @@ export const getEffectiveStyle = (model: IConfigurableFormComponent, effectiveDe
   return effectiveDesktopStyle as IStyleValue;
 };
 
-export const DIMENSION_UNITS = ['px', '%', 'vw', 'vh', 'em', 'rem', 'auto', 'calc', 'none', 'fr', 'in', 'cm', 'mm', 'pt', 'pc'] as const;
-export type DimensionUnits = typeof DIMENSION_UNITS[number];
-export interface DimensionValue {
+const DIMENSION_UNITS = ['px', '%', 'vw', 'vh', 'em', 'rem', 'auto', 'calc', 'none', 'fr', 'in', 'cm', 'mm', 'pt', 'pc'] as const;
+type DimensionUnits = typeof DIMENSION_UNITS[number];
+interface DimensionValue {
   value: number;
   unit: DimensionUnits;
   calc?: string;
@@ -62,7 +73,7 @@ const isValidDimensionResult = (value: unknown): value is string | number | null
  * @param context - Optional context object containing available constants (from useAvailableConstantsData)
  * @returns Parsed dimension object with value and unit, or null if invalid
  */
-export const parseDimension = (value: string | number | null | undefined | IPropertySetting, context?: object): DimensionValue | null => {
+const parseDimension = (value: string | number | null | undefined | IPropertySetting, context?: object): DimensionValue | null => {
   if (!isDefined(value)) return null;
 
   if (typeof value === 'number') {
@@ -166,27 +177,6 @@ export const addPx = (value: number | string | null | undefined, context?: objec
   }
 
   return `${parsed.value}${parsed.unit}`;
-};
-
-/**
- * Returns style overrides for ghost buttons.
- * Ghost buttons display only foreground color (text/icon) with no background, border, or shadow.
- * These overrides ensure ghost buttons maintain their transparent appearance.
- *
- * @returns Style object with transparent background, no border, and no shadow
- * @example
- * const ghostStyles = getGhostStyleOverrides();
- * // Returns: { background: 'transparent', backgroundColor: 'transparent', border: 'none', boxShadow: 'none' }
- */
-export const getGhostStyleOverrides = (fontStyles?: React.CSSProperties): React.CSSProperties => {
-  return {
-    ...fontStyles,
-    background: 'transparent',
-    backgroundColor: 'transparent',
-    border: 'none',
-    boxShadow: 'none',
-    color: fontStyles?.color ?? '#000',
-  };
 };
 
 export const hasNumber = (str: string | number): boolean => typeof str === 'number' ? true : /\d/.test(str);

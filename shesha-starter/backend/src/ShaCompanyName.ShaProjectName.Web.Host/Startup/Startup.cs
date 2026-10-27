@@ -13,24 +13,20 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
-using ShaCompanyName.ShaProjectName.Hangfire;
+using Microsoft.OpenApi;
 using Shesha;
+using Shesha.Authentication;
 using Shesha.Authorization;
 using Shesha.Configuration;
 using Shesha.DynamicEntities;
-using Shesha.DynamicEntities.Swagger;
 using Shesha.Elmah;
 using Shesha.Exceptions;
 using Shesha.Extensions;
 using Shesha.GraphQL;
-using Shesha.GraphQL.Middleware;
 using Shesha.Identity;
 using Shesha.Scheduler.Extensions;
 using Shesha.Swagger;
@@ -185,13 +181,13 @@ namespace ShaCompanyName.ShaProjectName.Web.Host.Startup
 				.AllowCredentials());
 			app.UseStaticFiles();
 
-			app.UseAuthentication();
-
 			app.UseAbpRequestLocalization();
 
 			app.UseRouting();
 
-			app.UseAuthorization();
+            app.UseAuthentication();
+
+            app.UseAuthorization();
 
 			app.UseEndpoints(endpoints =>
 			{
@@ -206,8 +202,11 @@ namespace ShaCompanyName.ShaProjectName.Web.Host.Startup
 				endpoints.MapSignalRHubs();
 			});
 
-			// Enable middleware to serve generated Swagger as a JSON endpoint
-			app.UseSwagger();
+            // Block access to Swagger UI when the setting is disabled
+            app.UseMiddleware<SwaggerUiAccessMiddleware>();
+
+            // Enable middleware to serve generated Swagger as a JSON endpoint
+            app.UseSwagger();
 
 			// Enable middleware to serve swagger-ui assets (HTML, JS, CSS etc.)
 			app.UseSwaggerUI(options =>
@@ -216,16 +215,8 @@ namespace ShaCompanyName.ShaProjectName.Web.Host.Startup
 				options.IndexStream = () => Assembly.GetExecutingAssembly()
 					.GetManifestResourceStream("ShaCompanyName.ShaProjectName.Web.Host.wwwroot.swagger.ui.index.html");
 			}); // URL: /swagger​
-			app.UseHangfireDashboard("/hangfire",
-				new DashboardOptions
-				{
-					Authorization = new[] { new HangfireAuthorizationFilter() }
-				});
-			app.UseMiddleware<GraphQLMiddleware>();
-			if (!_hostEnvironment.IsProduction())
-			{
-				app.UseGraphQLPlayground(); //to explorer API navigate https://*DOMAIN*/ui/playground
-			}
+
+            app.UseSheshaHangfireDashboard();
 		}
 
 		private void AddApiVersioning(IServiceCollection services)
@@ -238,23 +229,9 @@ namespace ShaCompanyName.ShaProjectName.Web.Host.Startup
 			//Swagger - Enable this line and the related lines in Configure method to enable swagger UI
 			services.AddSwaggerGen(options =>
 			{
-				options.DescribeAllParametersInCamelCase();
-				options.IgnoreObsoleteActions();
-				options.AddXmlDocuments();
+                options.UseSheshaDefaults();
 
-                options.SchemaFilter<DynamicDtoSchemaFilter>();
-                options.OperationFilter<SwaggerOperationFilter>();
-                // The line below will need to be uncommented when SwaggerUiDocumentFilter
-                // becomes available in Shesha
-                //options.DocumentFilter<SwaggerUiDocumentFilter>();
-
-				options.CustomSchemaIds(type => SwaggerHelper.GetSchemaId(type));
-
-				options.CustomOperationIds(desc => desc.ActionDescriptor is ControllerActionDescriptor d
-					? d.ControllerName.ToCamelCase() + d.ActionName.ToPascalCase()
-					: null);
-
-				options.AddDocumentsPerService();
+                options.AddDocumentsPerService();
 
 				// Define the BearerAuth scheme that's in use
 				options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme()
@@ -264,7 +241,6 @@ namespace ShaCompanyName.ShaProjectName.Web.Host.Startup
 					In = ParameterLocation.Header,
 					Type = SecuritySchemeType.ApiKey
 				});
-				//options.SchemaFilter<DynamicDtoSchemaFilter>();
 			});
 			services.Replace(ServiceDescriptor.Transient<ISwaggerProvider, CachingSwaggerProvider>());
 

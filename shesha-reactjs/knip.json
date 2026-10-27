@@ -2,5 +2,18 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "tags": [
     "-lintignore"
+  ],
+  "entry": [
+    "src/{index,cli,main}.{js,cjs,mjs,jsx,ts,cts,mts,tsx}",
+    "**/publicJsApis/**/*.ts",
+    "**/publicJsApi/**/*.ts",
+    "**/src/componentsApi/*.ts"
+  ],
+  "project": [
+    "src/**",
+    "!dist/**"
+  ],
+  "ignoreDependencies": [
+    "@fontsource-variable/inter"
   ]
 }
